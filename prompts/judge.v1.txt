@@ -1,0 +1,2 @@
+Score the candidate document conversion from 0 to 2 for each rubric criterion.
+Return only a JSON object with criterion names as keys and integer scores.

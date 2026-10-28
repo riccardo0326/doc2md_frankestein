@@ -1,0 +1,3 @@
+Describe the visible content of this document image faithfully.
+Mention charts, tables, labels, and other information-bearing details.
+Do not invent content that is not visible.

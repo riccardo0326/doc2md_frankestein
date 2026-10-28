@@ -1,0 +1,3 @@
+Transcribe the selected document page into faithful Markdown.
+Preserve headings, paragraphs, lists, tables, and reading order.
+Do not invent content that is not visible on the page.

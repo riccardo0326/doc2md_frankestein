@@ -1,0 +1,25 @@
+[suite]
+name = "migration-synthetic-v1"
+repetitions = 1
+cold_cache = true
+
+# Paths are placeholders for permitted synthetic or local sample documents.
+# Confidential documents must remain outside this repository.
+[[documents]]
+id = "sample-text"
+path = "samples/sample-text.pdf"
+tags = ["digital", "en"]
+
+[[documents]]
+id = "sample-scanned"
+path = "samples/sample-scanned.pdf"
+tags = ["scanned", "en"]
+
+[[pipelines]]
+name = "tiered"
+
+[[pipelines]]
+name = "full-vision"
+
+[[pipelines]]
+name = "docling-only"
