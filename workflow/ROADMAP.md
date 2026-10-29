@@ -14,7 +14,7 @@ are completed. Task-027 is the current enhancement task.
 | 5 | Corpus hardening and cutover evidence | `task-013` completed; `task-014` complete pending review |
 | 6 | Packaging, notices, and release | `task-015` reviewed |
 | 7 | Post-trial public runtime, packaging, ordering, determinism, and corpus gate | `task-022`-`task-026` completed |
-| 8 | Concise image descriptions and output-token budget | `task-027` ready |
+| 8 | Concise image descriptions and output-token budget | `task-027` dev-complete |
 
 ## Execution order
 
