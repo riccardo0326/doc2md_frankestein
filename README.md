@@ -66,6 +66,82 @@ complete. Use `--no-images` to disable embedded-image descriptions explicitly,
 but `COMPLEX` and `SCANNED` pages still require Kelpie. Keep service credentials
 in environment or approved service configuration only.
 
+## Troubleshooting
+
+### `Install doc2md[kelpie] for the Kelpie client`
+
+Install the Kelpie extra into the same Python environment that runs `doc2md`:
+
+```powershell
+python -m pip install -e ".[kelpie]"
+python -c "import httpx, openai, pypdfium2; print('Kelpie dependencies OK')"
+```
+
+If using a wheel, install the wheel's `kelpie` extra or install the documented
+Kelpie dependencies into that isolated environment. Installing the extra does
+not install OCR or vision model files.
+
+### `Kelpie proxy and model are not configured`
+
+Set the endpoint and approved deployment in the same terminal session used for
+conversion:
+
+```powershell
+$env:KELPIE_PROXY_BASE_URL = "http://127.0.0.1:18080"
+$env:KELPIE_MODEL = "DARE-NoCloud-Helios"
+doc2md convert input.pdf --out out
+```
+
+Alternatively, configure `vision.kelpie.base_url` and `vision.kelpie.model` in
+an API `Config`. Do not put credentials or service values in repository files.
+
+### Kelpie connection or timeout errors
+
+Confirm that the separate Kelpie process is running and listening at the
+configured endpoint. The client adds `/openai/v1` when needed. Restart the
+approved proxy if it is unavailable, then rerun the conversion. Affected pages
+remain isolated unless `--strict` is used.
+
+### `doc2md` resolves another checkout
+
+Check the package selected by the active Python environment:
+
+```powershell
+python -c "import doc2md; print(doc2md.__file__)"
+```
+
+If it points to another checkout, activate the intended virtual environment and
+install this workspace again before invoking `doc2md`.
+
+### A page fails with a `HardExtractionError`
+
+`COMPLEX` and `SCANNED` pages require Kelpie hard transcription. Check the
+original error in the document sidecar and `run.json`; unrelated pages may still
+have completed. `--no-images` disables only embedded-image descriptions and does
+not remove the Kelpie requirement for hard pages.
+
+### Image-heavy conversion is too slow
+
+Use `--no-images` to skip embedded-image descriptions while retaining explicit
+`vision_disabled` image records:
+
+```powershell
+doc2md convert input.pdf --out out --no-images
+```
+
+This does not disable hard-page transcription. Use `--no-cache` only when a cold
+run is specifically required; it generally increases work.
+
+### AnyDoc dependency or hosted-OCR errors
+
+Install the local AnyDoc extra for digital `TEXT` pages:
+
+```powershell
+python -m pip install -e ".[anydoc]"
+```
+
+The enterprise path uses `ocr="reject"`; do not enable hosted Firecrawl OCR.
+
 Wheel installations include the non-secret image and page prompts inside the
 `doc2md` package. Prompt lookup is independent of the current working directory
 and does not install OCR, layout, or model artifacts.
