@@ -133,7 +133,8 @@ le pagine digitali eleggibili:
 5. descrivere le immagini mantenendo il contratto `VisionBackend`;
 6. salvare immagini e descrizioni in modo deterministico;
 7. inserire i figure block dopo il blocco precedente corretto;
-8. registrare `ImageRecord`, usage, latency, cache e failure in `run.json`;
+8. registrare `ImageRecord` nel sidecar documentale e usage, latency, cache,
+   failure e call record `describe_image` in `run.json`;
 9. lasciare le immagini full-page `SCANNED` al hard path senza doppio conteggio.
 
 Il collegamento deve rimanere generale e configurabile. Non deve contenere
@@ -153,13 +154,56 @@ Fino al collegamento completo:
 ## Stato Della Valutazione
 
 La limitazione è stata osservata durante la revisione dell'architettura e del
-codice: image extraction/filtering è presente come componente testato, ma non è
-ancora integrato nel normale `PdfConverter` per le pagine `TEXT`.
+codice pre-integrazione: image extraction/filtering era presente come componente
+testato, ma non era ancora integrato nel normale `PdfConverter` per le pagine
+`TEXT`.
 
 Di conseguenza:
 
 - il percorso testo-only è utilizzabile;
 - il percorso immagini standalone è verificato con fake backend;
-- la copertura end-to-end delle immagini nelle pagine `TEXT` è ancora aperta;
+- la copertura end-to-end delle immagini nelle pagine `TEXT` era ancora aperta
+  prima dell'enhancement;
 - i benchmark attuali non devono essere interpretati come prova di qualità
   visuale completa.
+
+## Stato Dopo L'Integrazione Image-Context
+
+L'integrazione offline è stata completata e verificata con fixture sintetiche:
+
+- le pagine `TEXT` conservano testo, figure, `ImageRecord`, asset e provenance;
+- le pagine `COMPLEX` mantengono il risultato hard e possono aggiungere figure
+  embedded distinte;
+- le pagine `SCANNED` non inviano la stessa immagine full-page a
+  `describe_image()`;
+- cache, usage, latenza, failure e determinismo sono verificati senza rete.
+
+La verifica Kelpie reale e la regressione sul corpus autorizzato restano
+opzionali e dipendono dall'ambiente. Finché non vengono eseguite, non si dichiara
+un cutover enterprise completo e il fallback `pdfplumber` resta esplicito.
+
+Nel contratto finale, i dati completi delle immagini appartengono al sidecar
+documentale. `run.json` contiene solo i call record `describe_image` e i totali
+derivati di usage, latenza e cache; non duplica la lista `ImageRecord`.
+
+## Stato Dopo Il Ciclo Correttivo Post-Trial
+
+I difetti generali osservati nel trial sono stati chiusi offline:
+
+- il percorso pubblico API/CLI costruisce gli adapter immagine e hard configurati;
+- i prompt non-secret sono inclusi nel wheel e risolti come risorse del package;
+- figure nello stesso vertical band mantengono l'ordine sorgente;
+- sidecar freddo e warm-cache sono byte-identici, mentre `run.json` conserva la
+  telemetria operativa di cache e chiamate.
+
+Il wheel installato è stato verificato in un ambiente disposable isolato. Il
+controllo rappresentativo del comando pubblico ha usato solo PDF autorizzati in
+lettura e ha scritto gli output esclusivamente nell'area temporanea approvata;
+con AnyDoc e Kelpie non configurati, i fallimenti sono rimasti isolati per pagina.
+La guardia aggregata sul percorso autorizzato è passata senza conservare nomi,
+estratti, risposte, credenziali o token.
+
+La disponibilità reale di Kelpie resta una limitazione di ambiente: senza il
+servizio approvato le chiamate reali sono saltate e non viene attivato alcun OCR
+hosted o modello locale. Non si dichiara il cutover enterprise completo; il
+fallback `pdfplumber` resta esplicito e opt-in.

@@ -4,6 +4,21 @@
 **Scope:** Phase 4 cutover evidence available in this workspace.  
 **Decision status:** provisional; no enterprise go/no-go quality claim is made.
 
+## Post-Trial Update
+
+The post-trial corrective loop completed on 2026-10-29. Public runtime wiring,
+packaged prompt resources, stable overlapping-figure ordering, and warm-cache
+document determinism are now covered by the installed-tool smoke and offline
+contract suite. A live Kelpie trial also confirmed image records/assets for
+`TEXT` pages, hard plus image handling for `COMPLEX` pages, and no duplicate
+image descriptions for `SCANNED` pages.
+
+The exact authorized `unstructured-ingest-source` tree was inspected read-only:
+44 PDFs and 1,208 pages produced aggregate routing counts of 1,179 `TEXT`, 22
+`COMPLEX`, and 7 `SCANNED`. A no-image public conversion aggregate made 29 hard
+calls; two source/PDF-level failures and two isolated page failures remain
+categorized in the trial issue record. No enterprise cutover claim is made.
+
 ## Evidence
 
 | Evidence | Location | Environment |

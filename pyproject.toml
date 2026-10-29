@@ -38,6 +38,9 @@ doc2md = "doc2md.cli:main"
 [tool.setuptools.packages.find]
 where = ["src"]
 
+[tool.setuptools.package-data]
+doc2md = ["prompts/*.txt"]
+
 [tool.pytest.ini_options]
 pythonpath = ["src"]
 testpaths = ["tests"]

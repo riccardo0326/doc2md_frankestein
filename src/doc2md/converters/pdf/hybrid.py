@@ -23,6 +23,8 @@ from ...models import (
     Block,
     ConversionResult,
     ConvertedDocument,
+    ImageBlockDraft,
+    ImageRecord,
     Method,
     PageResult,
     PageStat,
@@ -33,6 +35,7 @@ from ...models import (
 )
 from ...render.markdown import render_markdown
 from ...render.sidecar import write_document, write_run
+from .images import ImageStage, place_image_drafts
 from .router import classify
 from .signals import compute_signals
 from .source import PdfSource
@@ -102,12 +105,14 @@ class PdfConverter:
         vision_extractor: VisionExtractor | None = None,
         fallback_extractor: FallbackExtractor | None = None,
         page_pdf_factory: PagePdfFactory | None = None,
+        image_stage: ImageStage | None = None,
     ) -> None:
         self.fast_extractor = fast_extractor
         self.hard_extractor = hard_extractor
         self.vision_extractor = vision_extractor
         self.fallback_extractor = fallback_extractor
         self.page_pdf_factory = page_pdf_factory or _slice_page
+        self.image_stage = image_stage
 
     def _fast(self) -> FastExtractor:
         if self.fast_extractor is None:
@@ -140,6 +145,7 @@ class PdfConverter:
         effective_config = config or Config()
         source_hash = _sha256(source_path)
         config_digest = _config_hash(effective_config)
+        output_dir = Path(out_dir) / source_path.stem if out_dir is not None else None
         cache = DiskCache(
             effective_config.cache.dir,
             source_hash,
@@ -151,7 +157,7 @@ class PdfConverter:
             selected = set(range(1, page_count + 1)) if pages is None else set(pages)
             if not selected or any(page < 1 or page > page_count for page in selected):
                 raise ValueError("pages must contain valid 1-based page numbers")
-            page_results, page_stats, warnings = self._process_pages(
+            page_results, page_stats, warnings, image_records = self._process_pages(
                 pdf,
                 source_path,
                 selected,
@@ -160,6 +166,7 @@ class PdfConverter:
                 cache,
                 metrics,
                 pipeline,
+                output_dir,
             )
 
         failed_count = sum(result.status == "failed" for result in page_results)
@@ -183,6 +190,7 @@ class PdfConverter:
             source=source_info,
             pipeline=pipeline,
             pages=page_results,
+            images=image_records,
             tool=tool,
         )
         markdown = render_markdown(
@@ -206,7 +214,8 @@ class PdfConverter:
         json_path: Path | None = None
         run_path: Path | None = None
         if out_dir is not None:
-            destination = Path(out_dir) / source_path.stem
+            destination = output_dir
+            assert destination is not None
             destination.mkdir(parents=True, exist_ok=True)
             markdown_path = destination / f"{source_path.stem}.md"
             json_path = destination / f"{source_path.stem}.json"
@@ -234,10 +243,15 @@ class PdfConverter:
         cache: DiskCache,
         metrics: MetricsCollector,
         pipeline: Literal["tiered", "full-vision", "docling-only"],
-    ) -> tuple[list[PageResult], list[PageStat], list[str]]:
+        output_dir: Path | None,
+    ) -> tuple[list[PageResult], list[PageStat], list[str], list[ImageRecord]]:
         page_results: list[PageResult] = []
         page_stats: list[PageStat] = []
         warnings: list[str] = []
+        image_records: list[ImageRecord] = []
+        image_drafts: list[ImageBlockDraft] = []
+        image_seen: dict[str, str] = {}
+        canonical_records: dict[str, ImageRecord] = {}
         for page_number, page in pdf:
             decision = classify(
                 compute_signals(page, config.router),
@@ -266,7 +280,6 @@ class PdfConverter:
                         page_class=decision.page_class,
                         method="vision",
                         blocks=blocks,
-                        warnings=["cache_hit:vision"],
                         duration_s=0.0,
                     )
                     metrics.record_cache(hit=True)
@@ -293,7 +306,6 @@ class PdfConverter:
                         page_class=decision.page_class,
                         method=blocks[0].provenance.source if blocks else None,
                         blocks=blocks,
-                        warnings=[f"cache_hit:{hard_backend}"],
                         duration_s=0.0,
                     )
                     metrics.record_cache(hit=True)
@@ -322,6 +334,41 @@ class PdfConverter:
                     cache,
                     metrics,
                 )
+            if (
+                pipeline == "tiered"
+                and decision.page_class in {"TEXT", "COMPLEX"}
+                and result.status == "ok"
+                and self.image_stage is not None
+            ):
+                try:
+                    image_result = self.image_stage.process_page(
+                        page,
+                        page_number,
+                        decision.page_class,
+                        source_path=source_path,
+                        output_dir=output_dir,
+                        seen=image_seen,
+                        cache=cache,
+                        canonical_records=canonical_records,
+                        config=config.images,
+                    )
+                    image_records.extend(image_result.records)
+                    image_drafts.extend(image_result.blocks)
+                    for _ in range(image_result.cache_hits):
+                        metrics.record_cache(hit=True)
+                    for _ in range(image_result.cache_misses):
+                        metrics.record_cache(hit=False)
+                    for call_id, call_result in image_result.calls:
+                        metrics.record_call("describe_image", call_id, call_result)
+                except Exception as exc:
+                    result = result.model_copy(
+                        update={
+                            "warnings": [
+                                *result.warnings,
+                                f"image_stage_failed:{type(exc).__name__}",
+                            ]
+                        }
+                    )
             page_results.append(result)
             page_stats.append(
                 PageStat(
@@ -334,7 +381,8 @@ class PdfConverter:
                 )
             )
             metrics.record_page(page_stats[-1])
-        return page_results, page_stats, warnings
+        page_results = place_image_drafts(page_results, image_drafts)
+        return page_results, page_stats, warnings, image_records
 
     def _convert_vision_page(
         self, page_number: int, page: Any, decision: RouteDecision
@@ -458,7 +506,6 @@ class PdfConverter:
                 page_class=decision.page_class,
                 method="anydoc",
                 blocks=blocks,
-                warnings=["cache_hit:anydoc"],
                 duration_s=0.0,
             )
         metrics.record_cache(hit=False)

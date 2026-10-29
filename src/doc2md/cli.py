@@ -10,7 +10,7 @@ from .api import convert as convert_pdf
 from .api import inspect_pdf
 from .bench.review import build_review_sheet, render_report
 from .bench.runner import BenchmarkRunner
-from .config import Config, RouterConfig
+from .config import Config, ImageConfig, RouterConfig
 from .models import RouteDecision
 
 app = typer.Typer(add_completion=False, no_args_is_help=True)
@@ -27,6 +27,12 @@ def _config_with_min_chars(min_chars: int | None) -> Config | None:
     if min_chars is None:
         return None
     return Config(router=RouterConfig(min_chars=min_chars))
+
+
+def _config_with_image_option(no_images: bool) -> Config | None:
+    if not no_images:
+        return None
+    return Config(images=ImageConfig(enabled=False))
 
 
 def _format_decisions(decisions: list[RouteDecision]) -> str:
@@ -63,6 +69,9 @@ def convert_command(
     out_dir: Path = typer.Option(Path("out"), "--out", "-o"),
     strict: bool = typer.Option(False, "--strict", help="Fail if any page fails."),
     no_cache: bool = typer.Option(False, "--no-cache", help="Disable the disk cache."),
+    no_images: bool = typer.Option(
+        False, "--no-images", help="Disable embedded image descriptions."
+    ),
     pipeline: Literal["tiered", "full-vision", "docling-only"] = typer.Option(
         "tiered", "--pipeline", help="Conversion comparison pipeline."
     ),
@@ -72,6 +81,7 @@ def convert_command(
         out_dir,
         strict=strict,
         no_cache=no_cache,
+        config=_config_with_image_option(no_images),
         pipeline=pipeline,
     )
     if result.markdown_path is not None:

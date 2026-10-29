@@ -35,9 +35,22 @@ def page_cache_key(source_hash: str, page: int, backend: str, config: object) ->
     return _digest({"source": source_hash, "page": page, "backend": backend, "config": config})
 
 
-def vision_cache_key(image_or_page: str, prompt_id: str, model: str, config: object) -> str:
+def vision_cache_key(
+    image_or_page: str,
+    prompt_id: str,
+    model: str,
+    config: object,
+    *,
+    backend: str = "unknown",
+) -> str:
     return _digest(
-        {"input": image_or_page, "prompt": prompt_id, "model": model, "config": config}
+        {
+            "input": image_or_page,
+            "prompt": prompt_id,
+            "model": model,
+            "backend": backend,
+            "config": config,
+        }
     )
 
 

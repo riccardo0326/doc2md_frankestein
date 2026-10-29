@@ -10,7 +10,7 @@ from typing import Any, Literal
 
 from ...cache import DiskCache, vision_cache_key
 from ...config import ImageConfig
-from ...errors import VisionError
+from ...errors import ConfigError, OptionalDependencyError, VisionError
 from ...models import BBox, Block, ImageBlockDraft, ImageRecord, PageResult, Provenance
 from ...vision.base import VisionBackend, VisionResult
 
@@ -39,6 +39,86 @@ class ImageProcessingResult:
 
 
 ImageRenderer = Callable[[Any, int, dict[str, Any], int], bytes]
+RendererDocumentFactory = Callable[[Path], Any]
+
+
+class ImageStage:
+    """Own page context and resources for the existing image functions."""
+
+    def __init__(
+        self,
+        config: ImageConfig,
+        *,
+        backend: VisionBackend | None = None,
+        renderer: ImageRenderer | None = None,
+        renderer_document_factory: RendererDocumentFactory | None = None,
+            cache_config: object | None = None,
+    ) -> None:
+        self.config = config
+        self.backend = backend
+        self.renderer = renderer
+        self.renderer_document_factory = renderer_document_factory
+        self.cache_config = cache_config
+
+    def _open_renderer_document(self, source_path: str | Path | None) -> Any:
+        if source_path is None:
+            raise ConfigError("source_path is required when no image renderer is injected")
+        path = Path(source_path)
+        if self.renderer_document_factory is not None:
+            return self.renderer_document_factory(path)
+        try:
+            import pypdfium2 as pdfium
+        except ModuleNotFoundError as exc:
+            raise OptionalDependencyError("pypdfium2 is required for image rendering") from exc
+        return pdfium.PdfDocument(str(path))
+
+    def process_page(
+        self,
+        page: Any,
+        page_number: int,
+        page_class: str | None,
+        *,
+        source_path: str | Path | None,
+        output_dir: Path | None,
+        seen: dict[str, str],
+        cache: DiskCache | None = None,
+        prompt_id: str = "describe_image.v1",
+        canonical_records: dict[str, ImageRecord] | None = None,
+        config: ImageConfig | None = None,
+    ) -> ImageProcessingResult:
+        effective_config = config or self.config
+        pdfium_document: Any | None = None
+        if self.renderer is None and page_class != "SCANNED":
+            pdfium_document = self._open_renderer_document(source_path)
+        try:
+            candidates = collect_images(
+                page,
+                pdfium_document,
+                page_number,
+                effective_config,
+                seen,
+                renderer=self.renderer,
+                page_class=page_class,
+            )
+            processing_options: dict[str, Any] = {
+                "prompt_id": prompt_id,
+                "output_dir": output_dir,
+                "describe": effective_config.enabled,
+                "cache": cache,
+                "cache_config": (
+                    self.cache_config
+                    if self.cache_config is not None
+                    else effective_config.model_dump(mode="json")
+                ),
+            }
+            if canonical_records is not None:
+                processing_options["canonical_records"] = canonical_records
+            return process_images(candidates, self.backend, **processing_options)
+        finally:
+            if pdfium_document is not None:
+                close = getattr(pdfium_document, "close", None)
+                if callable(close):
+                    close()
 
 
 def _render_crop(pdfium_document: Any, page_number: int, image: dict[str, Any], dpi: int) -> bytes:
@@ -199,8 +279,9 @@ def process_images(
     describe: bool = True,
     cache: DiskCache | None = None,
     cache_config: object | None = None,
+    canonical_records: dict[str, ImageRecord] | None = None,
 ) -> ImageProcessingResult:
-    records_by_id: dict[str, ImageRecord] = {}
+    records_by_id = canonical_records if canonical_records is not None else {}
     paths: dict[str, str | None] = {}
     data_uris: dict[str, str] = {}
     if output_dir is not None:
@@ -234,7 +315,18 @@ def process_images(
             "bbox": candidate.bbox,
         }
         if candidate.error is not None:
-            records.append(ImageRecord(status="failed", **base))
+            record = ImageRecord(status="failed", **base)
+            records.append(record)
+            drafts.append(
+                ImageBlockDraft(
+                    image_id=candidate.image_id,
+                    page=candidate.page,
+                    markdown=f"<!-- image {candidate.image_id}: render failed -->",
+                    text="",
+                    source_path=record.path,
+                    bbox=candidate.bbox,
+                )
+            )
             continue
         if candidate.skip_reason == "duplicate":
             canonical = records_by_id.get(candidate.canonical_image_id or "")
@@ -276,8 +368,10 @@ def process_images(
                 prompt_id,
                 getattr(backend, "model", "unknown"),
                 cache_config if cache_config is not None else {},
+                backend=getattr(backend, "name", "unknown"),
             )
             cached = cache.get("vision-image", cache_key) if cache is not None else None
+            cache_hit = cached is not None
             if cached is not None:
                 result = VisionResult.model_validate(cached)
                 cache_hits += 1
@@ -297,7 +391,8 @@ def process_images(
             )
             records.append(record)
             records_by_id[candidate.image_id] = record
-            calls.append((candidate.image_id, result))
+            if not cache_hit:
+                calls.append((candidate.image_id, result))
             drafts.append(
                 _figure_draft(
                     record,
@@ -330,15 +425,22 @@ def process_images(
 
 
 def place_image_drafts(pages: list[PageResult], drafts: list[ImageBlockDraft]) -> list[PageResult]:
+    def overlaps(first: BBox, second: BBox) -> bool:
+        return first.y0 < second.y1 and second.y0 < first.y1
+
     by_page: dict[int, list[ImageBlockDraft]] = {}
     for draft in drafts:
         by_page.setdefault(draft.page, []).append(draft)
     output = list(pages)
     for page_number, page_drafts in by_page.items():
-        page = next((item for item in output if item.page == page_number), None)
-        if page is None:
+        page_index = next(
+            (index for index, item in enumerate(output) if item.page == page_number), None
+        )
+        if page_index is None:
             continue
+        page = output[page_index]
         blocks = list(page.blocks)
+        placed_block_ids: set[str] = set()
         for draft in page_drafts:
             block = Block(
                 block_id=f"p{draft.page:04d}-b{len(blocks) + 1:03d}",
@@ -350,11 +452,35 @@ def place_image_drafts(pages: list[PageResult], drafts: list[ImageBlockDraft]) -
             )
             insert_at = len(blocks)
             if draft.bbox is not None:
-                insert_at = 0
-                for index, existing in enumerate(blocks):
-                    bbox = existing.provenance.bbox
-                    if bbox is None or bbox.y1 <= draft.bbox.y0:
-                        insert_at = index + 1
+                same_band = [
+                    index
+                    for index, existing in enumerate(blocks)
+                    if existing.block_id in placed_block_ids
+                    and existing.provenance.bbox is not None
+                    and overlaps(existing.provenance.bbox, draft.bbox)
+                ]
+                if same_band:
+                    insert_at = max(same_band) + 1
+                else:
+                    insert_at = 0
+                    first_unknown: int | None = None
+                    found_below = False
+                    for index, existing in enumerate(blocks):
+                        bbox = existing.provenance.bbox
+                        if bbox is None:
+                            if first_unknown is None:
+                                first_unknown = index
+                            continue
+                        if bbox.y1 <= draft.bbox.y0:
+                            insert_at = index + 1
+                        else:
+                            found_below = True
+                            if first_unknown is not None and insert_at <= first_unknown:
+                                insert_at = first_unknown
+                            break
+                    if not found_below and first_unknown is not None:
+                        insert_at = len(blocks)
             blocks.insert(insert_at, block)
-        output[output.index(page)] = page.model_copy(update={"blocks": blocks})
+            placed_block_ids.add(block.block_id)
+        output[page_index] = page.model_copy(update={"blocks": blocks})
     return output

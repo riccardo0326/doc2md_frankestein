@@ -72,7 +72,13 @@ Modify:
 
 ## Status
 
-dev-complete
+reviewed
+
+### Review
+
+Human review accepted the completed implementation and its recorded
+verification. The explicit pdfplumber fallback, enterprise boundaries, and
+release evidence remain preserved.
 
 ### Dev notes
 Files created:

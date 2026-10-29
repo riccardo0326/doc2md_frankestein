@@ -66,3 +66,16 @@ Use the six files from the authorized external path, not copies in this repo.
 Run the full offline suite first, then run `inspect_pdf` and `convert` against
 each permitted input with `Config(cache=CacheConfig(enabled=False))`. Keep the
 output directory temporary and preserve only aggregate counts like this report.
+
+## Post-Trial Aggregate — 2026-10-29
+
+The corrective-loop trial used the exact permitted read-only tree
+`C:\Users\rp99480\dev\unstructured-ingest-source`, not the historical Phase 5
+sample path above. Installed-tool inspection covered 44 PDFs and 1,208 pages:
+1,179 `TEXT`, 22 `COMPLEX`, and 7 `SCANNED`, with two inspect failures.
+
+The public no-image aggregate completed with 29 hard calls, two source/PDF-level
+failures, and two isolated failed pages. Image-description calls were disabled
+for this aggregate by the explicit CLI option; representative live runs covered
+image descriptions separately. No filenames, excerpts, outputs, responses,
+credentials, or token values were retained.

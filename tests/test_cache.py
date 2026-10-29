@@ -7,11 +7,18 @@ def test_cache_key_changes_with_output_affecting_inputs() -> None:
     first = anydoc_cache_key("source", 1, "0.2.4", "anydoc", {"min_chars": 50})
     same = anydoc_cache_key("source", 1, "0.2.4", "anydoc", {"min_chars": 50})
     changed = anydoc_cache_key("source", 1, "0.2.4", "anydoc", {"min_chars": 100})
-    image = vision_cache_key("image-hash", "describe_image.v1", "helios", {"dpi": 150})
+    image = vision_cache_key(
+        "image-hash", "describe_image.v1", "helios", {"dpi": 150}, backend="fake"
+    )
 
     assert first == same
     assert first != changed
-    assert image != vision_cache_key("other-image", "describe_image.v1", "helios", {"dpi": 150})
+    assert image != vision_cache_key(
+        "other-image", "describe_image.v1", "helios", {"dpi": 150}, backend="fake"
+    )
+    assert image != vision_cache_key(
+        "image-hash", "describe_image.v1", "helios", {"dpi": 150}, backend="kelpie"
+    )
 
 
 def test_cache_writes_json_atomically_and_reads_content(tmp_path: Path) -> None:

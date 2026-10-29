@@ -37,7 +37,7 @@ record changes them.
 
 - `MIGRATION-PLAN.md` is the migration source of truth.
 - `pyproject.toml` defines the independent package and development tooling.
-- `src/doc2md/__init__.py` is the current placeholder package module.
+- `src/doc2md/` is the installable package and public runtime implementation.
 - `tests/` contains offline bootstrap and future contract tests.
 - `workflow/tasks/` contains executable tasks. Only the task marked `ready` may start.
 - `docs/discovery.md` contains Phase 0 evidence.
