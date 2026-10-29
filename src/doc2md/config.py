@@ -24,7 +24,7 @@ class VisionConfig(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid", allow_inf_nan=False)
 
     backend: Literal["kelpie", "fake"] = "kelpie"
-    max_tokens: int = Field(default=800, ge=1)
+    max_tokens: int = Field(default=384, ge=1)
     transcribe_max_tokens: int = Field(default=1600, ge=1)
     timeout_s: float = Field(default=120.0, gt=0)
     max_retries: int = Field(default=3, ge=0)
