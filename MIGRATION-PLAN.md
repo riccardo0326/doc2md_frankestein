@@ -1,6 +1,7 @@
 # Frankenstein Migration Plan
 
-**Status:** draft; Phase 0 is signed off and task-015 is complete pending review.
+**Status:** draft; Phase 0 is signed off, task-015 is reviewed, and the
+image-context corrective loop through task-026 is complete.
 
 ## Objective
 

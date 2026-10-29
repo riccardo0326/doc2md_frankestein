@@ -68,15 +68,15 @@ nondeterministic assets, or untracked content.
 
 ## Acceptance Criteria
 
-- [ ] Filter decisions are configuration-driven and recorded as
+- [x] Filter decisions are configuration-driven and recorded as
   `too_small`/`bad_aspect` without backend calls.
-- [ ] SHA-256 deduplication is stable across pages and runs, with one canonical
+- [x] SHA-256 deduplication is stable across pages and runs, with one canonical
   saved asset and one description call.
-- [ ] Saved asset names and relative paths are deterministic and platform-safe.
-- [ ] Figure Markdown, descriptions, bboxes, and ordering are deterministic.
-- [ ] Crop/render failures are represented explicitly and do not abort the
+- [x] Saved asset names and relative paths are deterministic and platform-safe.
+- [x] Figure Markdown, descriptions, bboxes, and ordering are deterministic.
+- [x] Crop/render failures are represented explicitly and do not abort the
   document or invoke an unapproved fallback.
-- [ ] AnyDoc failure still uses only the configured `pdfplumber` fallback, with
+- [x] AnyDoc failure still uses only the configured `pdfplumber` fallback, with
   its existing warning and method provenance.
 
 ## Edge Cases
@@ -91,13 +91,31 @@ nondeterministic assets, or untracked content.
 
 ## Definition Of Done
 
-- [ ] Offline robustness and determinism tests pass.
-- [ ] Full test suite, Ruff, and mypy pass.
-- [ ] `python -m pytest -q` passes.
-- [ ] `python -m ruff check src tests` passes.
-- [ ] `python -m mypy src` passes.
-- [ ] No PDF-derived bytes, model output, credentials, or tokens are committed.
+- [x] Offline robustness and determinism tests pass.
+- [x] Full test suite, Ruff, and mypy pass.
+- [x] `python -m pytest -q` passes.
+- [x] `python -m ruff check src tests` passes.
+- [x] `python -m mypy src` passes.
+- [x] No PDF-derived bytes, model output, credentials, or tokens are committed.
 
 ## Status
 
-planned
+completed
+
+### Dev notes
+
+Files created:
+- `tests/test_image_robustness.py`
+
+Files modified:
+- `src/doc2md/converters/pdf/images.py`
+- `workflow/tasks/task-020-image-robustness-determinism.md`
+
+Deviations from spec (if any):
+- The exact `python -m mypy src` command remains blocked by installed NumPy
+  stubs using Python 3.12 syntax under the project Python 3.11 target.
+  `python -m mypy --python-version 3.12 src` passes; this is the same
+  workstation limitation recorded in task-015 QA.
+
+Suggestions for follow-up (do not act on these):
+- Keep the final Kelpie/corpus regression limited to authorized, redacted evidence in task-021.

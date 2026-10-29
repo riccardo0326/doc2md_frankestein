@@ -66,15 +66,15 @@ input and double processing would duplicate descriptions and tokens.
 
 ## Acceptance Criteria
 
-- [ ] Eligible `COMPLEX` pages preserve hard-path output and can add embedded
+- [x] Eligible `COMPLEX` pages preserve hard-path output and can add embedded
   figure records/blocks without changing the route class.
-- [ ] `SCANNED` pages never pass their full-page image to
+- [x] `SCANNED` pages never pass their full-page image to
   `VisionBackend.describe_image()` or the embedded-image stage.
-- [ ] Hard-page usage remains a `transcribe_page` record and image usage remains
+- [x] Hard-page usage remains a `transcribe_page` record and image usage remains
   a `describe_image` record; neither is relabelled.
-- [ ] One failing hard or image operation affects only its page/asset and does
+- [x] One failing hard or image operation affects only its page/asset and does
   not abort unrelated pages.
-- [ ] `full-vision` and `docling-only` comparison policies retain their current
+- [x] `full-vision` and `docling-only` comparison policies retain their current
   explicit image-disabled behavior.
 
 ## Edge Cases
@@ -89,13 +89,31 @@ input and double processing would duplicate descriptions and tokens.
 
 ## Definition Of Done
 
-- [ ] Fake-backed complex/scanned tests pass without network access.
-- [ ] Existing hard, image, hybrid, and pipeline tests remain green.
-- [ ] `python -m pytest -q` passes.
-- [ ] `python -m ruff check src tests` passes.
-- [ ] `python -m mypy src` passes.
-- [ ] No full-page or document-specific heuristic is introduced.
+- [x] Fake-backed complex/scanned tests pass without network access.
+- [x] Existing hard, image, hybrid, and pipeline tests remain green.
+- [x] `python -m pytest -q` passes.
+- [x] `python -m ruff check src tests` passes.
+- [x] `python -m mypy src` passes.
+- [x] No full-page or document-specific heuristic is introduced.
 
 ## Status
 
-planned
+completed
+
+### Dev notes
+
+Files created:
+- `tests/test_hybrid_complex_scanned_images.py`
+
+Files modified:
+- `src/doc2md/converters/pdf/hybrid.py`
+- `workflow/tasks/task-018-complex-scanned-routing.md`
+
+Deviations from spec (if any):
+- The exact `python -m mypy src` command remains blocked by installed NumPy
+  stubs using Python 3.12 syntax under the project Python 3.11 target.
+  `python -m mypy --python-version 3.12 src` passes; this is the same
+  workstation limitation recorded in task-015 QA.
+
+Suggestions for follow-up (do not act on these):
+- Keep image call accounting and aggregate run metrics in task-019.

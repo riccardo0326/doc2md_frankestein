@@ -23,11 +23,27 @@ For a normal local digital-PDF conversion, install both extras:
 python -m pip install -e ".[dev,anydoc]"
 ```
 
+For the complete public runtime, install the AnyDoc and Kelpie extras in an
+isolated environment. Verify the installed command before converting a corpus;
+another global `doc2md` command may resolve a different checkout:
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -e ".[anydoc,kelpie]"
+python -c "import doc2md; print(doc2md.__file__)"
+doc2md --help
+```
+
 Optional Kelpie client and page rendering:
 
 ```text
 python -m pip install -e ".[kelpie]"
 ```
+
+Wheel installations include the non-secret image and page prompts inside the
+`doc2md` package. Prompt lookup is independent of the current working directory
+and does not install OCR, layout, or model artifacts.
 
 AnyDoc uses the local `firecrawl-anydoc` Rust binding. Its hosted OCR option is
 not used. Enterprise OCR and visual transcription are available only through
@@ -70,12 +86,15 @@ python -m pip install -e ".[dev,anydoc]"
 
 doc2md inspect "C:\path\to\document.pdf" --json
 doc2md convert "C:\path\to\document.pdf" --out "C:\temp\doc2md-out" --no-cache
+doc2md convert "C:\path\to\document.pdf" --out "C:\temp\doc2md-out" --no-images
 ```
 
 The Markdown, JSON sidecar, and `run.json` will be under
 `C:\temp\doc2md-out\document\`. For a text-only digital PDF this uses local
 AnyDoc and makes no hosted Firecrawl OCR call. Complex/scanned pages require
-the approved Kelpie hard path; without it they remain isolated failures.
+the approved Kelpie hard path; without it they remain isolated failures. Use
+`--no-images` when image-description latency is not acceptable; image candidates
+remain explicitly recorded as vision-disabled.
 
 Run a benchmark and quality review:
 

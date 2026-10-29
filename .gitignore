@@ -1,15 +1,31 @@
+# Local environments and secrets
 .env
+.env.*
 .venv/
+venv/
+*.secret
+*.token
+
+# Python and development tool state
 __pycache__/
+*.py[cod]
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+
+# Local build and package artifacts
+build/
+dist/
+*.egg-info/
+*.whl
+
+# Local conversion and benchmark data
 samples/
 out/
 bench_runs/
 .doc2md_cache/
 docs/raw-output/
-*.secret
-*.token
-*.egg-info/
-*.whl

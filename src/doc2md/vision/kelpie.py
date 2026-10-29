@@ -4,7 +4,7 @@ import base64
 import os
 import random
 import time
-from pathlib import Path
+from importlib import resources
 from typing import Any, Callable
 
 from ..config import VisionConfig
@@ -64,8 +64,7 @@ class KelpieVisionBackend:
 
     @staticmethod
     def _prompt(prompt_id: str) -> str:
-        root = Path(__file__).resolve().parents[3]
-        prompt_path = root / "prompts" / f"{prompt_id}.txt"
+        prompt_path = resources.files("doc2md").joinpath("prompts", f"{prompt_id}.txt")
         try:
             return prompt_path.read_text(encoding="utf-8").strip()
         except FileNotFoundError as exc:

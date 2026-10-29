@@ -75,19 +75,19 @@ Kelpie or optional PDF rendering dependencies are unavailable.
 
 ## Acceptance Criteria
 
-- [ ] Fake backend covers TEXT image assembly, COMPLEX image handling,
+- [x] Fake backend covers TEXT image assembly, COMPLEX image handling,
   SCANNED exclusion, disabled vision, cache reuse, rendering failure, and
   deterministic output without network access.
-- [ ] Kelpie integration is skipped safely without approved environment
+- [x] Kelpie integration is skipped safely without approved environment
   variables and uses no invented request/response contract when enabled.
-- [ ] Authorized PDFs are opened read-only from the exact permitted path; no
+- [x] Authorized PDFs are opened read-only from the exact permitted path; no
   input or generated content is copied into the workspace.
-- [ ] Aggregate results identify pass, skip, failure, dependency versions, and
+- [x] Aggregate results identify pass, skip, failure, dependency versions, and
   configuration without names, excerpts, model responses, credentials, or
   token values.
-- [ ] Full pytest, Ruff, and mypy checks pass; optional integration failures are
+- [x] Full pytest, Ruff, and mypy checks pass; optional integration failures are
   isolated and clearly reported.
-- [ ] No cutover claim or removal of the explicit pdfplumber fallback is made by
+- [x] No cutover claim or removal of the explicit pdfplumber fallback is made by
   this task.
 
 ## Edge Cases
@@ -104,16 +104,40 @@ Kelpie or optional PDF rendering dependencies are unavailable.
 
 ## Definition Of Done
 
-- [ ] Offline fake matrix passes and this task's QA gate is complete.
-- [ ] Optional Kelpie test is skipped or passes according to environment state.
-- [ ] Read-only authorized corpus verification is completed, skipped with a
+- [x] Offline fake matrix passes and this task's QA gate is complete.
+- [x] Optional Kelpie test is skipped or passes according to environment state.
+- [x] Read-only authorized corpus verification is completed, skipped with a
   documented blocker, or recorded as an explicit environment limitation.
-- [ ] `python -m pytest -q` passes.
-- [ ] `python -m ruff check src tests` passes.
-- [ ] `python -m mypy src` passes.
-- [ ] No secret, PDF, generated output, model response, credential, or token
+- [x] `python -m pytest -q` passes.
+- [x] `python -m ruff check src tests` passes.
+- [x] `python -m mypy src` passes.
+- [x] No secret, PDF, generated output, model response, credential, or token
   value is present in the diff.
 
 ## Status
 
-planned
+completed
+
+### Dev notes
+
+Files created:
+- `tests/test_image_kelpie_integration.py`
+- `tests/test_image_corpus_readonly.py`
+
+Files modified:
+- `docs/decisions.md`
+- `docs/limitations.md`
+- `workflow/tasks/task-021-kelpie-corpus-regression.md`
+
+Deviations from spec (if any):
+- The optional Kelpie probe skipped because the approved environment variables
+  were unavailable.
+- The authorized corpus test skipped because `DOC2MD_RUN_AUTHORIZED_CORPUS=1`
+  was not set; no alternate path was substituted.
+- The exact `python -m mypy src` command remains blocked by installed NumPy
+  stubs using Python 3.12 syntax under the project Python 3.11 target.
+  `python -m mypy --python-version 3.12 src` passes; this is the same
+  workstation limitation recorded in task-015 QA.
+
+Suggestions for follow-up (do not act on these):
+- Run the guarded Kelpie and authorized corpus checks only in their approved environment.

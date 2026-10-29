@@ -199,3 +199,36 @@ extras. The release keeps pdfplumber rollback explicit, does not install model
 artifacts, and records direct Python plus native AnyDoc license evidence. The
 EDAG baseline remains outside scope; public/approved PDFs and synthetic fixtures
 are the permitted evaluation inputs.
+
+## D022 - Image-context verification remains evidence-bounded
+
+The image-context enhancement is verified offline with synthetic `TEXT`,
+`COMPLEX`, and `SCANNED` fixtures, fake vision calls, deterministic assets,
+cache-aware metrics, sidecars, failure isolation, and explicit fallback tests.
+Image records remain owned by the document sidecar; image calls and aggregate
+usage, latency, and cache totals remain in `run.json`.
+
+The optional Kelpie image probe and the authorized read-only corpus check remain
+environment-dependent. A skipped or unavailable run is recorded as a limitation,
+not as evidence of enterprise cutover. The explicit pdfplumber fallback and the
+no-hosted-OCR boundary remain unchanged.
+
+## D023 - Close the post-trial image-context defects without claiming cutover
+
+Tasks 022-025 close the verified public-runtime, prompt-packaging, figure-order,
+and warm-cache sidecar defects. The normal API and CLI now assemble the configured
+AnyDoc, Kelpie hard-page, and image adapters; prompt resources are packaged and
+resolved independently of the current working directory; overlapping figures
+retain source order; and cache-hit telemetry does not alter document content.
+
+Final offline verification on the migration workspace produced 90 passed and 5
+skipped tests, with Ruff passing and the Python-3.12-targeted mypy run passing.
+The default mypy target remains blocked only by the installed NumPy stub's
+Python-3.12 `type` syntax. The installed public command resolved the wheel from
+the disposable environment and resolved both packaged prompts.
+
+The installed public CLI representative check completed four documents with no
+CLI-level aborts; optional AnyDoc/Kelpie absence isolated nine page failures and
+produced no image records. The exact permitted read-only corpus guard passed in
+aggregate-only mode. No Kelpie service variables were available, so real Kelpie
+calls remain safely skipped. These results do not claim enterprise cutover.

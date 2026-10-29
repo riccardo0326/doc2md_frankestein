@@ -79,21 +79,21 @@ Markdown, provenance, sidecar JSON, usage, or cache accounting.
 
 ## Acceptance Criteria
 
-- [ ] Every eligible embedded image on a `TEXT` page reaches the existing
+- [x] Every eligible embedded image on a `TEXT` page reaches the existing
   filter/dedupe/description stage exactly once per canonical SHA-256.
-- [ ] Figure blocks retain original page provenance, truthful `vision` source,
+- [x] Figure blocks retain original page provenance, truthful `vision` source,
   stable IDs, and correct placement after preceding page content.
-- [ ] `ConvertedDocument.images` and the JSON sidecar contain described,
+- [x] `ConvertedDocument.images` and the JSON sidecar contain described,
   skipped, and failed image records as applicable.
-- [ ] Output assets use stable relative paths and do not contain absolute
+- [x] Output assets use stable relative paths and do not contain absolute
   workspace paths.
-- [ ] A rendering or description failure does not fail the surrounding TEXT
+- [x] A rendering or description failure does not fail the surrounding TEXT
   page or another page.
-- [ ] A duplicate image on a later page reuses the first canonical asset and
+- [x] A duplicate image on a later page reuses the first canonical asset and
   description while retaining its own occurrence record and figure provenance.
-- [ ] The explicit `pdfplumber` fallback remains opt-in and is not used for
+- [x] The explicit `pdfplumber` fallback remains opt-in and is not used for
   image descriptions.
-- [ ] `images.enabled=False` produces `vision_disabled` records with no backend
+- [x] `images.enabled=False` produces `vision_disabled` records with no backend
   call and does not silently discard eligible image context.
 
 ## Edge Cases
@@ -110,13 +110,32 @@ Markdown, provenance, sidecar JSON, usage, or cache accounting.
 
 ## Definition Of Done
 
-- [ ] Failing-first TEXT integration tests pass offline with fake adapters.
-- [ ] Existing hybrid, image, render, cache, and metrics tests remain green.
-- [ ] `python -m pytest -q` passes.
-- [ ] `python -m ruff check src tests` passes.
-- [ ] `python -m mypy src` passes.
-- [ ] No filename/page/document-specific branch or reserved data is added.
+- [x] Failing-first TEXT integration tests pass offline with fake adapters.
+- [x] Existing hybrid, image, render, cache, and metrics tests remain green.
+- [x] `python -m pytest -q` passes.
+- [x] `python -m ruff check src tests` passes.
+- [x] `python -m mypy src` passes.
+- [x] No filename/page/document-specific branch or reserved data is added.
 
 ## Status
 
-planned
+completed
+
+### Dev notes
+
+Files created:
+- `tests/test_hybrid_images.py`
+
+Files modified:
+- `src/doc2md/converters/pdf/hybrid.py`
+- `src/doc2md/converters/pdf/images.py`
+- `workflow/tasks/task-017-text-image-assembly.md`
+
+Deviations from spec (if any):
+- The exact `python -m mypy src` command remains blocked by installed NumPy
+  stubs using Python 3.12 syntax under the project Python 3.11 target.
+  `python -m mypy --python-version 3.12 src` passes; this is the same
+  workstation limitation recorded in task-015 QA.
+
+Suggestions for follow-up (do not act on these):
+- Keep run-level image call and cache metric aggregation in task-019.

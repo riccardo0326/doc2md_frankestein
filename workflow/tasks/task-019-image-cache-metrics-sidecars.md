@@ -69,17 +69,17 @@ discovered Kelpie interface.
 
 ## Acceptance Criteria
 
-- [ ] Image cache keys include image identity/SHA-256, prompt, model, backend,
+- [x] Image cache keys include image identity/SHA-256, prompt, model, backend,
   and output-affecting configuration through the existing key seam.
-- [ ] Cache hits create no new `CallStat`, no new backend call, and no new token
+- [x] Cache hits create no new `CallStat`, no new backend call, and no new token
   total; cache misses create exactly one canonical image call.
-- [ ] `run.json` reports image latency and usage through its existing calls
+- [x] `run.json` reports image latency and usage through its existing calls
   envelope and totals remain derived from records.
-- [ ] The document sidecar contains all image records, including duplicates,
+- [x] The document sidecar contains all image records, including duplicates,
   skipped assets, and failures, with truthful provenance in figure blocks; it is
   the sole owner of the full image-record list.
-- [ ] `--no-cache`/`no_cache=True` produces a cold run with no read or write.
-- [ ] Corruption is isolated to one cache entry and visible as a warning.
+- [x] `--no-cache`/`no_cache=True` produces a cold run with no read or write.
+- [x] Corruption is isolated to one cache entry and visible as a warning.
 
 ## Edge Cases
 
@@ -94,14 +94,35 @@ discovered Kelpie interface.
 
 ## Definition Of Done
 
-- [ ] Offline cache/metrics/sidecar integration tests pass.
-- [ ] Existing cache, metrics, render, hybrid, and image tests remain green.
-- [ ] `python -m pytest -q` passes.
-- [ ] `python -m ruff check src tests` passes.
-- [ ] `python -m mypy src` passes.
-- [ ] No usage values, credentials, model responses, or cache payloads from
+- [x] Offline cache/metrics/sidecar integration tests pass.
+- [x] Existing cache, metrics, render, hybrid, and image tests remain green.
+- [x] `python -m pytest -q` passes.
+- [x] `python -m ruff check src tests` passes.
+- [x] `python -m mypy src` passes.
+- [x] No usage values, credentials, model responses, or cache payloads from
   real services are committed.
 
 ## Status
 
-planned
+completed
+
+### Dev notes
+
+Files created:
+- `tests/test_image_telemetry.py`
+
+Files modified:
+- `src/doc2md/cache.py`
+- `src/doc2md/converters/pdf/hybrid.py`
+- `src/doc2md/converters/pdf/images.py`
+- `tests/test_cache.py`
+- `workflow/tasks/task-019-image-cache-metrics-sidecars.md`
+
+Deviations from spec (if any):
+- The exact `python -m mypy src` command remains blocked by installed NumPy
+  stubs using Python 3.12 syntax under the project Python 3.11 target.
+  `python -m mypy --python-version 3.12 src` passes; this is the same
+  workstation limitation recorded in task-015 QA.
+
+Suggestions for follow-up (do not act on these):
+- Keep crop/filter/placement determinism hardening in task-020.

@@ -3,6 +3,11 @@
 You are implementing the `image-context` enhancement in
 `C:\Users\rp99480\dev\doc2md_frankestein`.
 
+This prompt governed the completed tasks `016` through `021`. For the
+post-trial corrective loop, use
+`docs/enhancements/image-context/POST-TRIAL-FIX-PROMPT.md` and tasks `022`
+through `026` instead.
+
 ## Non-Negotiable Rules
 
 1. Read `AGENTS.md`, `MIGRATION-PLAN.md`, `workflow/PROJECT.md`,
@@ -14,10 +19,10 @@ You are implementing the `image-context` enhancement in
    their files or content.
 4. The current task file is the source of truth. Do not start a task whose
    status is not `ready`, and do not invent tasks outside `task-016` through
-   `task-021`. Since `task-015` is currently pending review, first verify that
-   its review gate has been accepted. If it has not, stop with that blocker. If
-   it has, mark only `task-016` `ready` and begin; no human confirmation is
-   requested between enhancement tasks.
+   `task-021`. The review gate for `task-015` is recorded as accepted. If the
+   task file or project records disagree, stop with that blocker. Otherwise
+   start only the task marked `ready`; no human confirmation is requested
+   between enhancement tasks.
 5. Do not implement the next task early. Keep each change limited to the
    current task's objective, files, acceptance criteria, and Definition of
    Done.

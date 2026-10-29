@@ -9,6 +9,7 @@ from .converters.pdf.router import classify
 from .converters.pdf.signals import compute_signals
 from .converters.pdf.source import PdfSource
 from .models import ConversionResult, RouteDecision
+from .runtime import build_runtime
 
 
 def convert(
@@ -23,7 +24,11 @@ def convert(
     converter: PdfConverter | None = None,
 ) -> ConversionResult:
     """Run the standalone tiered converter with optional injected seams."""
-    return (converter or PdfConverter()).convert(
+    if converter is None:
+        effective_config = config or Config()
+        converter = build_runtime(source, effective_config)
+        config = effective_config
+    return converter.convert(
         source,
         out_dir,
         config=config,

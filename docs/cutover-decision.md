@@ -4,6 +4,21 @@
 **Decision:** provisional AnyDoc default for local `TEXT` fast extraction; no
 complete enterprise hybrid cutover.
 
+## Post-Trial Status — 2026-10-29
+
+The public runtime now constructs the configured AnyDoc, Kelpie hard-page, and
+image adapters, and the installed wheel resolves both prompt resources. Live
+representative conversions verified image assets and records, hard-path
+provenance, scanned-page exclusion, and byte-identical warm-cache document
+outputs. The provisional `TEXT` AnyDoc default and explicit pdfplumber rollback
+remain unchanged.
+
+Performance remains an open quality concern for image-heavy documents: a
+two-page document with 80 image candidates exceeded a short trial timeout with
+normal descriptions, while explicit `--no-images` completed successfully. Real
+Kelpie quality and broader performance thresholds still require a separate
+approved review.
+
 ## Default
 
 `fast.backend=anydoc` remains the default for pages classified `TEXT`. This is

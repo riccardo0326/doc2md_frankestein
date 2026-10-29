@@ -19,8 +19,7 @@ and document-specific branching in later integration tasks.
 ## Dependencies And Initial State
 
 - Depends on the `task-015` review gate and Phase 0 sign-off.
-- Initial status: `planned`; it becomes `ready` only after the `task-015` review
-  gate is accepted.
+- Initial status: `ready`; the `task-015` review gate is accepted.
 - This task is planned only in this branch and is not started by the planning
   phase.
 
@@ -68,15 +67,15 @@ and document-specific branching in later integration tasks.
 
 ## Acceptance Criteria
 
-- [ ] The seam accepts original page number and page class without deriving
+- [x] The seam accepts original page number and page class without deriving
   either from a filename or a page-specific rule.
-- [ ] Tests can inject a renderer and a fake backend entirely offline.
-- [ ] The default renderer remains lazy and does not install or invoke local
+- [x] Tests can inject a renderer and a fake backend entirely offline.
+- [x] The default renderer remains lazy and does not install or invoke local
   OCR/model artifacts.
-- [ ] `ImageProcessingResult` remains the source of records, drafts, calls,
+- [x] `ImageProcessingResult` remains the source of records, drafts, calls,
   cache hits, and cache misses.
-- [ ] No Kelpie request field, response field, or retry rule is added.
-- [ ] Existing `tests/test_images.py` behavior remains green.
+- [x] No Kelpie request field, response field, or retry rule is added.
+- [x] Existing `tests/test_images.py` behavior remains green.
 
 ## Edge Cases
 
@@ -91,15 +90,33 @@ and document-specific branching in later integration tasks.
 
 ## Definition Of Done
 
-- [ ] Test-first seam tests pass offline.
-- [ ] Existing image unit tests pass unchanged or with justified contract
+- [x] Test-first seam tests pass offline.
+- [x] Existing image unit tests pass unchanged or with justified contract
   assertions only.
-- [ ] `python -m pytest -q` passes.
-- [ ] `python -m ruff check src tests` passes.
-- [ ] `python -m mypy src` passes.
-- [ ] No debug output, secrets, PDF bytes, model responses, or generated
+- [x] `python -m pytest -q` passes.
+- [x] `python -m ruff check src tests` passes.
+- [x] `python -m mypy src` passes.
+- [x] No debug output, secrets, PDF bytes, model responses, or generated
   artifacts are committed.
 
 ## Status
 
-planned
+completed
+
+### Dev notes
+
+Files created:
+- `tests/test_image_stage.py`
+
+Files modified:
+- `src/doc2md/converters/pdf/images.py`
+- `workflow/tasks/task-016-image-stage-seam.md`
+
+Deviations from spec (if any):
+- The exact `python -m mypy src` command is blocked by the installed NumPy
+  stubs using Python 3.12 syntax while the project configuration targets
+  Python 3.11. `python -m mypy --python-version 3.12 src` passes; this matches
+  the recorded workstation limitation in the task-015 QA report.
+
+Suggestions for follow-up (do not act on these):
+- Keep the image stage separate from normal converter wiring until task-017.

@@ -16,8 +16,8 @@ branch.
 
 Before branch creation the repository was clean on `main`; this planning branch
 is now `enhancement/image-context-integration`. Phase 0 is signed off and
-`task-015` is dev-complete pending review. The current gap is specific and
-verified:
+`task-015` is reviewed and the image-context gate is now open. The current gap
+is specific and verified:
 
 - `src/doc2md/converters/pdf/images.py` already discovers, renders, filters,
   hashes, deduplicates, saves, describes, caches, and places image drafts.
@@ -159,11 +159,11 @@ second serialized image-record contract.
 | `task-020` | Crop/filter/dedupe/placement/failure determinism hardening | `task-017`, `task-018`, `task-019` |
 | `task-021` | Optional Kelpie probe and authorized read-only regression matrix | `task-020` |
 
-There are no circular dependencies. Because `task-015` is still pending review,
-all enhancement tasks are initially `planned`. After that prerequisite is
-explicitly accepted, only `task-016` may become `ready`; all later tasks remain
-`planned`. A task becomes `completed` only after its own QA passes, and only the
-next row may then become `ready`.
+There are no circular dependencies. The `task-015` review gate is accepted and
+tasks `016` through `021` have completed their QA gates. The post-trial loop
+starts with `task-022` as `ready`; tasks `023` through `026` remain `planned`.
+A task becomes `completed` only after its own QA passes, and only the next row
+may then become `ready`.
 
 ## Test And Verification Policy
 
@@ -198,3 +198,20 @@ The plan was reviewed internally for numeric ordering, dependency direction,
 test-first execution, contract fidelity, data-safety boundaries, and separation
 of required versus optional work. The review result and any corrections are
 recorded in the implementation prompt and in the final planning response.
+
+## Post-Trial Corrective Loop
+
+The first user-level trial against the authorized `unstructured-ingest-source`
+corpus found five general follow-up gaps: public runtime wiring, prompt resource
+packaging, same-band figure ordering, warm-cache sidecar determinism, and the
+installed-tool/corpus smoke gate. These are ordered as tasks `022` through
+`026`; they must use the same test-first, contract-fidelity, and data-safety
+rules as tasks `016` through `021`.
+
+| Task | Outcome | Depends on |
+|---|---|---|
+| `task-022` | Public CLI/API runtime constructs image and hard adapters | `task-021` trial |
+| `task-023` | Installed wheel packages prompts and resolves the correct entry point | `task-022` |
+| `task-024` | Same-band and overlapping figures preserve stable source order | `task-023` |
+| `task-025` | Warm-cache document sidecars remain deterministic | `task-024` |
+| `task-026` | Disposable installed-tool and authorized corpus regression gate | `task-025` |
