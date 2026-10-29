@@ -1,8 +1,8 @@
 # ROADMAP
 
 Phase 0 is signed off. Tasks 002-014 are completed, task-015 is reviewed, and
-image-context tasks 016-021 are completed. Post-trial corrective task-022 is
-completed; tasks 023-026 are completed.
+image-context tasks 016-021 are completed. Post-trial corrective tasks 022-026
+are completed. Task-027 is the current enhancement task.
 
 | Phase | Result | Status |
 |---|---|---|
@@ -14,6 +14,7 @@ completed; tasks 023-026 are completed.
 | 5 | Corpus hardening and cutover evidence | `task-013` completed; `task-014` complete pending review |
 | 6 | Packaging, notices, and release | `task-015` reviewed |
 | 7 | Post-trial public runtime, packaging, ordering, determinism, and corpus gate | `task-022`-`task-026` completed |
+| 8 | Concise image descriptions and output-token budget | `task-027` dev-complete |
 
 ## Execution order
 

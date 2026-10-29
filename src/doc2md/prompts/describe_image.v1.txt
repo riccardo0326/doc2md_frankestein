@@ -1,3 +1,5 @@
-Describe the visible content of this document image faithfully.
-Mention charts, tables, labels, and other information-bearing details.
-Do not invent content that is not visible.
+Describe the visible content of this document image faithfully and concisely, focusing on information-bearing content.
+Prioritize charts, tables, labels, numbers, components, and relationships needed to understand the image.
+For charts, include the title, axes, legend, main trend, and important values. For tables, include the purpose, headers, and values needed to preserve meaning. For diagrams or screenshots, include meaningful labels, components, and relationships.
+Do not enumerate every visible object. Omit decorative details such as colors, styling, background, and layout unless they carry meaning.
+Return one compact paragraph of at most three sentences. Do not invent content that is not visible.
