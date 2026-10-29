@@ -41,6 +41,31 @@ Optional Kelpie client and page rendering:
 python -m pip install -e ".[kelpie]"
 ```
 
+## Kelpie Runtime
+
+`doc2md` does not start or supervise a Kelpie process. Start the approved Kelpie
+proxy separately, then run `doc2md` from another terminal. The verified local
+launcher is:
+
+```text
+kelpie serve run
+```
+
+Point the public tool at the running proxy with an environment variable. The
+client appends `/openai/v1` when the base URL does not already contain it:
+
+```powershell
+$env:KELPIE_PROXY_BASE_URL = "http://127.0.0.1:18080"
+doc2md convert input.pdf --out out
+```
+
+The client connects lazily only when a `COMPLEX`/`SCANNED` hard page or an
+embedded-image description needs Kelpie. If the proxy is unavailable, affected
+pages or images fail in isolation; `TEXT` pages that only need AnyDoc can still
+complete. Use `--no-images` to disable embedded-image descriptions explicitly,
+but `COMPLEX` and `SCANNED` pages still require Kelpie. Keep service credentials
+in environment or approved service configuration only.
+
 Wheel installations include the non-secret image and page prompts inside the
 `doc2md` package. Prompt lookup is independent of the current working directory
 and does not install OCR, layout, or model artifacts.
